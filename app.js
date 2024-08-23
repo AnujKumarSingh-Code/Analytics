@@ -15,34 +15,58 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-app.get('/', async (req, res) => {
-    const users = await User.find();
-    res.render('index', { users });
+// Home route with sign-up form
+app.get('/', (req, res) => {
+    res.render('index');
 });
 
-app.get('/:username', async (req, res) => {
-    const user = await User.findOne({ username: req.params.username });
+// Create a new user
+app.post('/signup', async (req, res) => {
+    const { username } = req.body;
+
+    // Check if the user already exists
+    let user = await User.findOne({ username });
     if (user) {
-        res.render('user', { user });
-    } else {
-        res.status(404).send('User not found');
+        return res.send('Username already exists');
     }
+
+    // Create a new user
+    user = new User({ username, links: [] });
+    await user.save();
+
+    res.redirect(`/user/${username}`);
 });
 
-app.post('/:username/add-link', async (req, res) => {
-    const user = await User.findOne({ username: req.params.username });
-    if (user) {
-        user.links.push({
-            linkName: req.body.linkName,
-            url: req.body.url
-        });
-        await user.save();
-        res.redirect(`/${req.params.username}`);
-    } else {
-        res.status(404).send('User not found');
+// User's page to view and add links
+app.get('/user/:username', async (req, res) => {
+    const { username } = req.params;
+    const user = await User.findOne({ username });
+
+    if (!user) {
+        return res.send('User not found');
     }
+
+    res.render('user', { user });
 });
 
+// Add a link to a user's page
+app.post('/user/:username/add-link', async (req, res) => {
+    const { username } = req.params;
+    const { linkName, url } = req.body;
+
+    // Find the user and add the link
+    const user = await User.findOne({ username });
+    if (!user) {
+        return res.send('User not found');
+    }
+
+    user.links.push({ linkName, url });
+    await user.save();
+
+    res.redirect(`/user/${username}`);
+});
+
+// Start the server
 app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+    console.log('Server running on http://localhost:3000');
 });
