@@ -40,12 +40,20 @@
         <button type="submit">Add Link</button>
     </form>
 
+
+
+
+
+
     <!-- Display existing links -->
     <h2>Existing Links</h2>
     <ul>
         <% user.links.forEach(link => { %>
             <li>
-                <a href="<%= link.url %>" target="_blank"><%= link.linkName %></a>
+               <a href="<%= link.url %>"
+             onclick="gtag('event', 'click', { 'event_category': 'user_link', 'event_label': '<%= user.username %>_<%= link.label %>' });">
+            <%= link.linkName %>
+          </a>
             </li>
         <% }) %>
     </ul>
