@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= user.username %>'s Links</title>
+
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+        var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-WVMX86M3');
+    </script>
+    <!-- End Google Tag Manager -->
+
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVMX86M3" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <h1><%= user.username %>'s Links</h1>
+
+    <ul>
+        <% user.links.forEach(link => { %>
+            <li>
+                <a href="<%= link.url %>" target="_blank" onclick="trackLink('<%= link.linkName %>')"><%= link.linkName %></a>
+            </li>
+        <% }) %>
+    </ul>
+
+    <h2>Add New Link</h2>
+    <form action="/<%= user.username %>/add-link" method="POST">
+        <input type="text" name="linkName" placeholder="Link Name" required>
+        <input type="url" name="url" placeholder="URL" required>
+        <button type="submit">Add Link</button>
+    </form>
+
+    <script>
+        function trackLink(linkName) {
+            dataLayer.push({
+                'event': 'linkClick',
+                'linkName': linkName,
+                'user': '<%= user.username %>'
+            });
+        }
+    </script>
+</body>
+</html>
