@@ -27,9 +27,7 @@ app.use(express.static('public'));
 
 
 
-// Load the service account credentials
-const fs = require('fs');
-const path = require('path');
+
 
 const keyPath = path.join(__dirname, 'config/black-media-433412-b0.json');
 const key = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
