@@ -28,10 +28,12 @@ app.use(express.static('public'));
 
 
 // Load the service account credentials
-const keyPath = path.join(__dirname, 'config/black-media-433412-b0.json'); // Update with your JSON file path
-const key = JSON.parse(fs.readFileSync(keyPath));
+const fs = require('fs');
+const path = require('path');
 
-// Initialize JWT client
+const keyPath = path.join(__dirname, 'config/black-media-433412-b0.json');
+const key = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+
 const jwtClient = new google.auth.JWT(
   key.client_email,
   null,
@@ -39,6 +41,7 @@ const jwtClient = new google.auth.JWT(
   ['https://www.googleapis.com/auth/analytics.readonly'],
   null
 );
+
 
 
 // View ID from Google Analytics
