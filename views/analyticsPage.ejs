@@ -1,0 +1,37 @@
+<!-- views/analyticsPage.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Data</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Add your CSS file if needed -->
+</head>
+<body>
+    <h1>Analytics Data for User: <%= username %></h1>
+    
+    <h2>Link Clicks Data</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Link</th>
+                <th>Clicks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (analyticsData && analyticsData.length > 0) { %>
+                <% analyticsData.forEach((data) => { %>
+                    <tr>
+                        <td><%= data.link %></td>
+                        <td><%= data.clicks %></td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="2">No data available</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</body>
+</html>
