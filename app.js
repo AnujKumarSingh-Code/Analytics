@@ -163,9 +163,14 @@ app.post('/user/:username/add-link', async (req, res) => {
 
 
 app.get('/analytics/:username/:linkLabel', async (req, res) => {
-    const { username, linkLabel } = req.params;
-    const data = await getLinkData(username, linkLabel);
-    res.render('analyticsPage', { data }); // Render the data on a new analyticsPage.ejs
+    try{
+         const { username, linkLabel } = req.params;
+         const data = await getLinkData(username, linkLabel);
+        res.render('analyticsPage', { data }); // Render the data on a new analyticsPage.ejs
+    } catch(error) {
+        res.error(error)
+    }
+   
   });
   
 
