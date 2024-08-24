@@ -45,9 +45,10 @@ const jwtClient = new google.auth.JWT(
 const VIEW_ID = '455823334'; // Replace with your GA View ID
 
 
+// Function to fetch data
 async function getLinkData(username, linkLabel) {
   try {
-    const response = await google.analyticsreporting('v4').reports.batchGet({
+    const response = await analyticsreporting.reports.batchGet({
       auth: jwtClient,
       requestBody: {
         reportRequests: [
@@ -69,7 +70,7 @@ async function getLinkData(username, linkLabel) {
                 name: 'ga:eventLabel',
               },
             ],
-            filtersExpression: `ga:eventCategory==user_link;ga:eventLabel==${username}_${linkLabel}`,
+            filtersExpression: `ga:eventCategory==user_link`, // More general filter
           },
         ],
       },
@@ -79,10 +80,12 @@ async function getLinkData(username, linkLabel) {
     const rows = report.data.rows;
 
     if (rows) {
-      return rows.map((row) => ({
-        link: row.dimensions[0],
-        clicks: row.metrics[0].values[0],
-      }));
+      return rows
+        .filter(row => row.dimensions[0] === `${username}_${linkLabel}`)
+        .map(row => ({
+          link: row.dimensions[0],
+          clicks: row.metrics[0].values[0],
+        }));
     } else {
       return [];
     }
