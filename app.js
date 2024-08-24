@@ -46,51 +46,51 @@ const VIEW_ID = '455823334'; // Replace with your GA View ID
 
 
 async function getLinkData(username, linkLabel) {
-    try {
-      const response = await analyticsreporting.reports.batchGet({
-        auth: jwtClient,
-        requestBody: {
-          reportRequests: [
-            {
-              viewId: VIEW_ID,
-              dateRanges: [
-                {
-                  startDate: '30daysAgo',
-                  endDate: 'today',
-                },
-              ],
-              metrics: [
-                {
-                  expression: 'ga:totalEvents',
-                },
-              ],
-              dimensions: [
-                {
-                  name: 'ga:eventLabel',
-                },
-              ],
-              filtersExpression: `ga:eventCategory==user_link;ga:eventLabel==${username}_${linkLabel}`,
-            },
-          ],
-        },
-      });
-  
-      const report = response.data.reports[0];
-      const rows = report.data.rows;
-  
-      if (rows) {
-        rows.forEach((row) => {
-          const eventLabel = row.dimensions[0];
-          const totalEvents = row.metrics[0].values[0];
-          console.log(`Link: ${eventLabel}, Clicks: ${totalEvents}`);
-        });
-      } else {
-        console.log('No data found for this link.');
-      }
-    } catch (err) {
-      console.error('Error fetching data:', err);
+  try {
+    const response = await google.analyticsreporting('v4').reports.batchGet({
+      auth: jwtClient,
+      requestBody: {
+        reportRequests: [
+          {
+            viewId: VIEW_ID,
+            dateRanges: [
+              {
+                startDate: '30daysAgo',
+                endDate: 'today',
+              },
+            ],
+            metrics: [
+              {
+                expression: 'ga:totalEvents',
+              },
+            ],
+            dimensions: [
+              {
+                name: 'ga:eventLabel',
+              },
+            ],
+            filtersExpression: `ga:eventCategory==user_link;ga:eventLabel==${username}_${linkLabel}`,
+          },
+        ],
+      },
+    });
+
+    const report = response.data.reports[0];
+    const rows = report.data.rows;
+
+    if (rows) {
+      return rows.map((row) => ({
+        link: row.dimensions[0],
+        clicks: row.metrics[0].values[0],
+      }));
+    } else {
+      return [];
     }
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    return [];
   }
+}
 
 
 
@@ -161,18 +161,15 @@ app.post('/user/:username/add-link', async (req, res) => {
 
 
 
-
 app.get('/analytics/:username/:linkLabel', async (req, res) => {
-    try{
-         const { username, linkLabel } = req.params;
-         const data = await getLinkData(username, linkLabel);
-        res.render('analyticsPage', { data }); // Render the data on a new analyticsPage.ejs
-    } catch(error) {
-        res.send(error)
-    }
-   
-  });
+  const { username, linkLabel } = req.params;
+  const analyticsData = await getLinkData(username, linkLabel);
   
+  res.render('analyticsPage', {
+    username,
+    analyticsData,
+  });
+});
 
 
 
