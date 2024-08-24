@@ -1,6 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
+const { google } = require('googleapis');
+const analyticsreporting = google.analyticsreporting('v4');
+const fs = require('fs');
+const path = require('path');
 
 mongoose.connect('mongodb+srv://anujkumarsinghcoder:QgSvKNYjniJWzg0F@project-next.amlt0ce.mongodb.net/?retryWrites=true&w=majority&appName=project-next');
 
@@ -13,7 +17,90 @@ const User = mongoose.model('User', userSchema);
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static('public')); 
+
+
+
+
+
+
+
+
+
+// Load the service account credentials
+const keyPath = path.join(__dirname, 'config/black-media-433412-b0.json'); // Update with your JSON file path
+const key = JSON.parse(fs.readFileSync(keyPath));
+
+// Initialize JWT client
+const jwtClient = new google.auth.JWT(
+  key.client_email,
+  null,
+  key.private_key,
+  ['https://www.googleapis.com/auth/analytics.readonly'],
+  null
+);
+
+
+// View ID from Google Analytics
+const VIEW_ID = '455823334'; // Replace with your GA View ID
+
+
+async function getLinkData(username, linkLabel) {
+    try {
+      const response = await analyticsreporting.reports.batchGet({
+        auth: jwtClient,
+        requestBody: {
+          reportRequests: [
+            {
+              viewId: VIEW_ID,
+              dateRanges: [
+                {
+                  startDate: '30daysAgo',
+                  endDate: 'today',
+                },
+              ],
+              metrics: [
+                {
+                  expression: 'ga:totalEvents',
+                },
+              ],
+              dimensions: [
+                {
+                  name: 'ga:eventLabel',
+                },
+              ],
+              filtersExpression: `ga:eventCategory==user_link;ga:eventLabel==${username}_${linkLabel}`,
+            },
+          ],
+        },
+      });
+  
+      const report = response.data.reports[0];
+      const rows = report.data.rows;
+  
+      if (rows) {
+        rows.forEach((row) => {
+          const eventLabel = row.dimensions[0];
+          const totalEvents = row.metrics[0].values[0];
+          console.log(`Link: ${eventLabel}, Clicks: ${totalEvents}`);
+        });
+      } else {
+        console.log('No data found for this link.');
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
 
 // Home route with sign-up form
 app.get('/', (req, res) => {
@@ -65,6 +152,28 @@ app.post('/user/:username/add-link', async (req, res) => {
 
     res.redirect(`/user/${username}`);
 });
+
+
+
+
+
+
+
+
+
+
+app.get('/analytics/:username/:linkLabel', async (req, res) => {
+    const { username, linkLabel } = req.params;
+    const data = await getLinkData(username, linkLabel);
+    res.render('analyticsPage', { data }); // Render the data on a new analyticsPage.ejs
+  });
+  
+
+
+
+  
+
+
 
 // Start the server
 app.listen(3000, () => {
