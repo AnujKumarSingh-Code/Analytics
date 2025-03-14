@@ -6,7 +6,7 @@ const analyticsreporting = google.analyticsreporting('v4');
 const fs = require('fs');
 const path = require('path');
 
-mongoose.connect('mongodb+srv://anujkumarsinghcoder:QgSvKNYjniJWzg0F@project-next.amlt0ce.mongodb.net/?retryWrites=true&w=majority&appName=project-next');
+
 
 const userSchema = new mongoose.Schema({
     username: String,
